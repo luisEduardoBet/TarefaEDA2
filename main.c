@@ -5,8 +5,8 @@
 
 int main(){
 
-    //Randomiza um arquivo txt com n números pseudo-aleatórios. O valor de n é passado na função
-    randomDataset(PATH,3);
+    //Randomiza um arquivo txt com n números ps eudo-aleatórios. O valor de n é passado na função
+    randomDataset(PATH,10);    
 
     tree *arvore =  createTree(); 
 
@@ -14,7 +14,9 @@ int main(){
 
     printf("\n\n"); 
 
-    preOrdem(arvore->root);    
+    printf("%d\n", altura(arvore->root)+1);
+
+    posOrdem(arvore->root);    
 
 }
 

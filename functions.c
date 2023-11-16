@@ -51,17 +51,20 @@ void readDataset(char* path, tree *arvore){
     fclose(p);
 }
 
-//Mostar arvore pre-ordem(raiz, esquerda, direita)
+//Mostar arvore pre-ordem(esquerda, raiz,direita)
 
-void preOrdem(node*  raiz){
+void posOrdem(node*  raiz){
 
     if(raiz !=  NULL){
-        printf("%d ", raiz->chave); 
-        preOrdem(raiz->esq); 
-        preOrdem(raiz->dir);
-
+        posOrdem(raiz->esq);
+        if(raiz->pai == NULL){ 
+            printf("Chave: %d | PAI: NULL \n", raiz->chave); 
+        }else{
+            printf("Chave: %d | PAI: %d\n ", raiz->chave, raiz->pai->chave); 
+        }
+         
+        posOrdem(raiz->dir);
     }
-
 }
 
 
@@ -111,28 +114,43 @@ int fb(node * no){
     }
 
     if (no->dir != NULL){ 
-        direita = altura(no->dir)+1; 
+         direita = altura(no->dir)+1; 
     }
 
     return esquerda - direita; 
 }
 
-// Rptação Simples à esquerda
-node* rse(node *no){ 
+// Rotação Simples à esquerda
+node* rse(tree* arvore, node *no){
+ 
     node *pai = no->pai; 
     node *direita =  no->dir; 
 
-    no->dir = direita->esq; 
+    no->dir = direita->esq;
     no->pai = direita; 
 
     direita->esq = no; 
-    direita-> pai = pai; 
+    direita->pai = pai; 
 
+    if(no->dir != NULL) {
+        no->dir->pai = no; 
+    }
+
+    if(pai==NULL){
+        arvore->root = direita  ;
+    }else{
+        if(pai->esq == no){
+            pai->esq = direita; 
+        }
+        else{
+            pai->dir = direita;
+        }
+    }   
     return direita; 
 }
 
 // Rotação Simples à Direita
-node* rsd(node *no){
+node* rsd(tree* arvore, node *no){
 
     node *pai = no->pai; 
     node *esquerda = no->esq; 
@@ -141,21 +159,39 @@ node* rsd(node *no){
     no->pai = esquerda; 
     
     esquerda->dir= no; 
-    esquerda->pai = pai; 
+    esquerda->pai = pai;
+
+    if(no->esq != NULL){
+        no->esq->pai = no;
+    } 
+
+    if(pai==NULL){
+        arvore->root = esquerda;
+    }else{
+        if(pai->esq == no){
+            pai->esq = esquerda; 
+        }
+        else{
+            pai->dir = esquerda;
+        }
+        
+    }   
+
+    return esquerda;
 
 }
 
 //Rotação Dupla à Esquerda
 
-node * rde( node* no){
-    no->dir = rsd(no->dir); 
-    return rse(no);
+node * rde( tree* arvore, node* no){
+    no->dir = rsd(arvore, no->dir); 
+    return rse(arvore, no);
 }
 
 //Rotação Dupla à Direita
-node *rdd(node* no){
-    no->esq =  rse(no->esq); 
-    return rsd(no);
+node *rdd(tree* arvore, node* no){
+    no->esq =  rse(arvore, no->esq);
+    return rsd(arvore, no); 
 }
 
 
@@ -169,41 +205,43 @@ node* adicionar(tree* arvore, int n){
     }
     else{
         node* no = inserir(arvore->root, n); 
-        no->alt = altura(no);
-        //printf("%d", no->chave);
-        balancear(no);
+        balancear(arvore, no);
         return no;
     }
 }
 
 node* inserir(node* no, int n){
 
-    //Inserção comum de uma arvore de Busca Binária
-    if(no == NULL){
-        return (novoNo(n)); 
-    }
-    else{
-        
-        if (no->chave > n){ 
-            no->esq = inserir(no->esq, n);
-            no->esq->pai = no; 
-            return no->esq;
-        } 
-        else{
+    if(n > no->chave){
 
-            if(no->chave < n){ 
-                no->dir =  inserir(no->esq,n);
-                no->dir->pai = no; 
-                return no->dir;
-            } 
-            else{ 
-                return no; 
-            }
+        if(no->dir == NULL){
+            no->dir = novoNo(n);
+            no->dir->pai =  no;
+        }
+        else{
+            return inserir(no->dir, n);
         }
     }
+    else{
+        if(n < no->chave){
+            if(no->esq == NULL){
+                no->esq = novoNo(n);
+                no->esq->pai =  no;
+            }
+            else{
+                return inserir(no->esq, n);
+            }
+        }
+        else{
+            //caso há valor repetido
+            return novoNo(n);
+        }
+    }
+    
 }
 
-void balancear(node *no){
+
+void balancear(tree* arvore, node *no){
 
     while(no != NULL){
         int fator =  fb(no);
@@ -211,10 +249,10 @@ void balancear(node *no){
         if(fator > 1){
             
             if (fb(no->esq) > 0){
-                rsd(no);
+                rsd(arvore, no);
             }
             else{
-                rdd(no);
+                rdd(arvore, no);
             }
 
         }
@@ -222,10 +260,10 @@ void balancear(node *no){
         else if (fator < -1){ 
 
             if(fb(no->dir) < 0){
-                rse(no);
+                rse(arvore, no);
             }
             else{
-                rde(no);
+                rde(arvore, no);
             }
         }
 

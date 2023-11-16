@@ -18,17 +18,17 @@ typedef struct Tree{
 
 void randomDataset(char* path,int n);
 void readDataset(char* path, tree *arvore); 
-void preOrdem(node*  raiz);
+void posOrdem(node*  raiz);
 tree* createTree();
 node* novoNo(int n);
 int altura(node *no);
 int fb(node * no);
-node* rse(node *no);
-node* rsd(node *no);
-node * rde( node* no);
-node *rdd(node* no);
+node* rse(tree* arvore,node *no);
+node* rsd(tree* arvore,node *no);
+node * rde(tree* arvore, node* no);
+node *rdd(tree* arvore,node* no);
 node* adicionar(tree* arvore, int n);
 node* inserir(node* no, int n);
-void balancear(node *no); 
+void balancear(tree* arvore, node *no); 
 
 #endif
