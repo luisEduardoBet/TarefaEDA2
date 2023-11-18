@@ -29,6 +29,10 @@ node * rde(tree* arvore, node* no);
 node *rdd(tree* arvore,node* no);
 node* adicionar(tree* arvore, int n);
 node* inserir(node* no, int n);
+void remover(tree* arvore, int n);
+node* deletar(node * root, int n);
+node *buscarNo(node* root, int n);
+node * pegaMaior(node* no);
 void balancear(tree* arvore, node *no); 
 
 #endif

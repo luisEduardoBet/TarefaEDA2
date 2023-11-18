@@ -238,8 +238,58 @@ node* inserir(node* no, int n){
         }
     }
     
+    
 }
 
+void remover(tree* arvore, int n){
+
+    node *no = deletar(arvore->root, n); 
+    balancear(arvore, no);
+}
+
+
+node *deletar(node *root, int n){
+    
+    node* no = buscarNo(root, n); 
+
+    if(no == NULL){ // No não foi encontrado na busca
+        return NULL;
+    }
+
+    else{
+
+        node* pai = no->pai;
+
+        if(no->dir == NULL && no->esq == NULL){    
+            if(pai->esq ==  no) pai->esq = NULL;
+            else pai->dir = NULL; 
+            free(no);
+            return pai;
+        }
+        
+        else{
+
+            if(no->dir != NULL && no->esq!= NULL){
+                node *aux = pegaMaior(no->esq);
+                no->chave =  aux->chave; 
+                no->dir->pai = no; 
+
+                deletar(no->esq, aux->chave);
+
+            }
+            else{
+                node *aux = no->esq? no->esq:no->dir;
+                *no = *aux;
+                no->pai = pai;
+                free(aux);
+            }
+
+        }
+
+        return no;
+    }
+
+}
 
 void balancear(tree* arvore, node *no){
 
@@ -269,5 +319,24 @@ void balancear(tree* arvore, node *no){
 
         no = no->pai;
     }
+}
+
+node *buscarNo(node* root, int n){
+
+    if (root == NULL || root->chave == n){
+        return root;
+    }
+
+    if(root->chave < n) return buscarNo(root->dir, n); 
+    else if (root->chave > n) return buscarNo(root->esq, n);
+}
+
+node * pegaMaior(node* no){
+
+    if(no->dir ==NULL){
+        return no; 
+    }
+    else return pegaMaior(no->dir);
+
 }
 
