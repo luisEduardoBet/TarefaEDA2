@@ -24,8 +24,6 @@ typedef struct Tree{
 } tree;
 
 int maior(int, int);
-void randomDataset(char* path,int n);
-void readDataset(char* path, tree *arvore); 
 void inOrdem(node*  raiz);
 void removerTodos(node*  raiz);
 tree* createTree();

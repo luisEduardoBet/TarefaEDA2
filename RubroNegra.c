@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#define REPETICOES 10
-#define QTD 1000
+#define REPETICOES 15
 
 enum coloracao {Vermelho, Preto};
 typedef enum coloracao Cor;
+
+int cont = 0; 
 
 typedef struct no {
     struct no* pai;
@@ -20,8 +21,6 @@ typedef struct arvore {
     struct no* raiz;
     struct no* nulo; 
 } Arvore;
-
-int cont=0;
 
 No* criarNo(Arvore*, No*, int);
 Arvore* criar();
@@ -78,6 +77,8 @@ void remover(Arvore* arvore, No* no) {
 No* adicionarNo(Arvore* arvore, No* no, int valor) {
     cont++;
     if(valor>no->valor){
+
+        cont++;
         if(no->direita==arvore->nulo){
             no->direita=criarNo(arvore, no, valor);     
             no->direita->cor=Vermelho;
@@ -86,18 +87,23 @@ No* adicionarNo(Arvore* arvore, No* no, int valor) {
         }else 
             return adicionarNo(arvore, no->direita, valor); 
 
-    }else if(valor<no->valor){
-        if(no->esquerda==arvore->nulo){
-            no->esquerda=criarNo(arvore, no, valor);
-            no->esquerda->cor=Vermelho;
-            no->qtd=1; 
-            return no->esquerda;
-        }else 
-            return adicionarNo(arvore, no->esquerda, valor);
-    }else{
-          no->qtd++;
-          return no;
-    } 
+    }
+    else{
+        cont++;
+        if(valor<no->valor){
+            cont++;
+            if(no->esquerda==arvore->nulo){
+                no->esquerda=criarNo(arvore, no, valor);
+                no->esquerda->cor=Vermelho;
+                no->qtd=1; 
+                return no->esquerda;
+            }else 
+                return adicionarNo(arvore, no->esquerda, valor);
+        }else{
+            no->qtd++;
+            return no;
+        } 
+    }
 }
 
 No* adicionar(Arvore* arvore, int valor) {
@@ -142,16 +148,24 @@ void visitar(int valor){
 }
 
 void balancear(Arvore* arvore, No* no) {
+    cont++;
     while(no->pai->cor==Vermelho){ //Garante que todos os niveis foram balanciados
+        cont++;
+
         cont++;
         if(no->pai==no->pai->pai->esquerda){
             No *tio=no->pai->pai->direita; // tio é o nodo da direita e pai o da esquerda
+            
+            cont++;
             if(tio->cor==Vermelho){ //Caso 2
                 tio->cor=Preto;               
                 no->pai->cor=Preto;           
                 no->pai->pai->cor = Vermelho; 
                 no=no->pai->pai; //Vai pro nível anterior
-            }else{
+            }
+            else{
+
+                cont++;
                 if(no==no->pai->direita){ //Caso 3
                     no=no->pai; //Rotaciona a esquerda no pai
                     rotacionarEsquerda(arvore, no); 
@@ -163,12 +177,15 @@ void balancear(Arvore* arvore, No* no) {
             }
         }else{
             No *tio=no->pai->pai->esquerda; //tio é o nodo da esquerda e pai o da direita
+            
+            cont++;
             if(tio->cor==Vermelho){ //Caso 2
                 tio->cor=Preto;             
                 no->pai->cor=Preto;         
                 no->pai->pai->cor=Vermelho; 
                 no=no->pai->pai; //Vai pro nível anterior
             }else{
+                cont++;
                 if(no==no->pai->esquerda){  //Caso 3
                     no=no->pai; //Rotaciona a direita no pai
                     rotacionarDireita(arvore, no);
@@ -184,46 +201,56 @@ void balancear(Arvore* arvore, No* no) {
 }
 
 void rotacionarEsquerda(Arvore* arvore, No* no) {
-    cont++;
 
     No* direita=no->direita;
     no->direita=direita->esquerda; 
 
+
+    cont++;
     if(direita->esquerda!=arvore->nulo) 
         direita->esquerda->pai=no; //Se houver filho à esquerda em direita, ele será pai do nó
 
     direita->pai=no->pai; //Ajusta no pai do nó à direita
 
+    cont++;
     if(no->pai==arvore->nulo) 
         arvore->raiz=direita; //Se nó for raiz, o nó direita será a nova raiz da árvore
-    else if(no==no->pai->esquerda) 
-        no->pai->esquerda=direita; //Corrige relação pai-filho do novo pai (esquerda)
-    else 
-        no->pai->direita=direita; //Corrige relação pai-filho do novo pai (direita)
+    else{ 
 
+        cont++;
+        if(no==no->pai->esquerda) 
+            no->pai->esquerda=direita; //Corrige relação pai-filho do novo pai (esquerda)
+        else 
+            no->pai->direita=direita; //Corrige relação pai-filho do novo pai (direita)
+    }
     direita->esquerda=no; //Corrige relação pai-filho entre o nó pivô e o nó à direita
     no->pai=direita;
 }
 
 void rotacionarDireita(Arvore* arvore, No* no) {
-    cont++;
+    
 
     No* esquerda=no->esquerda;
     no->esquerda=esquerda->direita;
 
+    cont++;
     if(esquerda->direita!=arvore->nulo) 
         esquerda->direita->pai=no; //Se houver filho à direita em esquerda, ele será pai do nó
 
 
     esquerda->pai=no->pai; //Ajusta no pai do nó à esquerda
 
+    cont++;
     if(no->pai==arvore->nulo) 
         arvore->raiz=esquerda; //Se nó for raiz, o nó esquerda será a nova raiz da árvore
-    else if(no==no->pai->esquerda) 
+    else {
+        cont++;
+        if(no==no->pai->esquerda) 
         no->pai->esquerda=esquerda;  //Corrige relação pai-filho do novo pai (esquerda)
-    else 
+        
+        else 
         no->pai->direita=esquerda; //Corrige relação pai-filho do novo pai (direita)
-    
+    }
     esquerda->direita=no; //Corrige relação pai-filho entre o nó pivô e o nó à esquerda
     no->pai=esquerda;
 }
@@ -412,48 +439,56 @@ int deleteNo(Arvore* arvore, int valor) {
 }
 
 
+void delay(int milliseconds)
+{
+    long pause;
+    clock_t now,then;
+
+    pause = milliseconds*(CLOCKS_PER_SEC/1000);
+    now = then = clock();
+    while( (now-then) < pause )
+        now = clock();
+}
+
+
 int main() {
-    int contadores[QTD];
-    int num;
-    for(int i=0;i<QTD;i++) 
-        contadores[i]=0;
+    for(int k = 100; k < 1000; k+=50){
+    int contInserir = 0;
+    int contRemover = 0;
 
-    srand(time(NULL));
+    for(int i = 0;i < REPETICOES; i++){
 
-    int contadorCasoMedio=0;
-    for(int i=0;i<REPETICOES;i++){
+        srand(time(NULL));
+
         Arvore* a = criar();
-        cont=0;
-        for(int j=0;j<QTD;j++){
-            num=rand()%1000;
-            adicionar(a,num);
-            contadores[j]+=cont;
+        cont = 0;
+
+        int aleatorio = rand() % (k-1);
+        int num_to_remove; 
+
+        for(int j = 0; j < k; j++){
+            int num = rand()%10000;
+            adicionar(a, num); 
+
+            if(aleatorio == j){ 
+                num_to_remove = num;
+            }
+
         }
-        remover(a, a->raiz);
-        contadorCasoMedio+=cont;
+
+        contInserir += cont;
+
+        cont = 0; 
+
+        deleteNo(a, num_to_remove);
+        contRemover += cont;  
+
+        //remover(a, a->raiz);
+
     }
 
-    Arvore* a = criar();
-        cont=0;
-        for(int j=0;j<QTD;j++){
-            int n=rand()%1000;
-            if(j==5){
-                num = n;
-            }
-            adicionar(a,num);
-        }
+    printf("Nodos: %d  | Complexidade de Inserção: %d\n", k, contInserir/REPETICOES);
+    printf("Nodos: %d  | Complexidade de Remoção: %d\n", k, contRemover/REPETICOES);
 
-    int d = deleteNo(a,num);
-
-    printf("deleta = %i\n",d);
-
-    for(int i=49;i<QTD;i+=50) 
-        printf("%d\n", i+1);
-    
-    printf("\n\n\n");
-
-    for(int i=49;i<QTD;i+=50) 
-        printf("%d\n", contadores[i]/REPETICOES);
-    
-    printf("Media para o caso medio: %d\n\n", contadorCasoMedio/REPETICOES);
+    }
 }
