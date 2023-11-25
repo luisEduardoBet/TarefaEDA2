@@ -1,73 +1,134 @@
 #include <stdio.h> 
 #include <time.h> 
 #include <stdlib.h>
-#include "functions.h"
 
-void randomDataset(char* path,int n){
 
-    FILE *p =  fopen(path, "w"); 
+#define NUM_REPETICOES 15
 
-    if(!p)
-        printf("Erro: Não foi possivel achar o path do arquivo\n");
+//contador
+int cont = 0; 
 
-    else{
+typedef struct Node{
+
+    int chave; 
+    struct Node *pai; 
+    struct Node *esq; 
+    struct Node *dir; 
+    int altura; 
+
+} node; 
+
+
+typedef struct Tree{
+    node *root; 
+} tree;
+
+int maior(int, int);
+void randomDataset(char* path,int n);
+void readDataset(char* path, tree *arvore); 
+void inOrdem(node*  raiz);
+void removerTodos(node*  raiz);
+tree* createTree();
+node* novoNo(int n);
+int altura(node *no);
+int fb(node * no);
+node* rse(tree* arvore,node *no);
+node* rsd(tree* arvore,node *no);
+node * rde(tree* arvore, node* no);
+node *rdd(tree* arvore,node* no);
+node* adicionar(tree* arvore, int n);
+node* inserir(node* no, int n);
+void remover(tree* arvore, int n);
+node* deletar(node * root, int n);
+node *buscarNo(node* root, int n);
+node * pegaMaior(node* no);
+void balancear(tree* arvore, node *no); 
+void delay(int milliseconds);
+
+int main(){
+
+
+
+for(int k = 1000; k <= 10000; k+=500){
+    int contInserir = 0;
+    int contRemover = 0;
+
+    for(int i = 0;i < NUM_REPETICOES; i++){
 
         srand(time(NULL));
+        tree* a = createTree();
+        cont = 0;
+        int aleatorio = rand() % (k-1);
+        int num_to_remove; 
+        for(int j = 0; j < k; j++){
+            int num = rand()%10000;
+            adicionar(a,num);
 
-        for(int i = 0; i < n; i++){
-
-            int random= rand() % 10000; 
-
-            if((i+1) == n){ 
-                fprintf(p, "%d", random); 
-            }else{
-                fprintf(p, "%d\n", random);
+            if(aleatorio == j){ 
+                num_to_remove = num;
             }
-
-            
         }
 
+        contInserir += cont;
+
+        cont = 0; 
+
+        remover(a, num_to_remove);
+        contRemover += cont;  
+
+        removerTodos(a->root);
+
+        delay(1000);
     }
 
-    fclose(p);
+    printf("Nodos: %d  | Complexidade de Inserção: %d\n", k, contInserir/NUM_REPETICOES);
+    printf("Nodos: %d  | Complexidade de Remoção: %d\n", k, contRemover/NUM_REPETICOES);
+
+    }
 }
 
 
-void readDataset(char* path, tree *arvore){
+//Função que gera um delay. Utilizada para atualizar a seed do srand()
+void delay(int milliseconds)
+{
+    long pause;
+    clock_t now,then;
 
-    FILE *p = fopen(path,"r");
-
-    if(!p) printf("Erro: Não foi possivel achar o path do arquivo\n");
-
-    else{
-        while(!feof(p)){
-            int key; 
-            fscanf(p, "%d",&key);
-            printf("%d ", key);
-            adicionar(arvore, key);
-        }
-    }
-
-    fclose(p);
+    pause = milliseconds*(CLOCKS_PER_SEC/1000);
+    now = then = clock();
+    while( (now-then) < pause )
+        now = clock();
 }
 
-//Mostar arvore pre-ordem(esquerda, raiz,direita)
 
-void posOrdem(node*  raiz){
+// Printa a arvore inOrdem(Lado Esquerdo, Raiz, Lado direito)
+void inOrdem(node*  raiz){
 
     if(raiz !=  NULL){
-        posOrdem(raiz->esq);
+        inOrdem(raiz->esq);
         if(raiz->pai == NULL){ 
-            printf("Chave: %d | PAI: NULL \n", raiz->chave); 
+            printf("Chave: %d | PAI: NULL | Altura: %d\n", raiz->chave, raiz->altura); 
         }else{
-            printf("Chave: %d | PAI: %d\n ", raiz->chave, raiz->pai->chave); 
+            printf("Chave: %d | PAI: %d |Altura: %d \n", raiz->chave, raiz->pai->chave, raiz->altura); 
         }
          
-        posOrdem(raiz->dir);
+        inOrdem(raiz->dir);
     }
 }
 
+//Percorre a arvore em Pos-Ordem (Transversal) e remove todos os nós da arvore
+void removerTodos(node*  raiz){
 
+    if(raiz == NULL){
+        return;
+    }
+
+    removerTodos(raiz->esq);
+    removerTodos(raiz->dir);
+
+    free(raiz);
+
+}
 
 // ---------------------------------- AVL TREE --------------------------------------------
 
@@ -84,45 +145,31 @@ node* novoNo(int n){
     nNodo->pai = NULL;
     nNodo->esq = NULL;
     nNodo->dir = NULL;
-    nNodo->alt = 0; 
+    nNodo->altura = 1; 
 
     return nNodo; 
 }
 
+
 int altura(node *no){ 
 
-    int esquerda = 0; int direita = 0; 
+   cont++;  
+   if(no == NULL) return 0; 
 
-    if(no->esq != NULL){ 
-        esquerda =  altura(no->esq) + 1; 
-    }
-
-    if (no->dir != NULL){ 
-        direita = altura(no->dir)+1; 
-    }
-
-    return esquerda > direita? esquerda:direita; 
+   return no->altura; 
 
 }
 
-
+// Calcula o fator de balanceamento em um nó
 int fb(node * no){
-    int esquerda = 0; int direita = 0; 
-
-    if(no->esq != NULL){ 
-        esquerda =  altura(no->esq) + 1; 
-    }
-
-    if (no->dir != NULL){ 
-         direita = altura(no->dir)+1; 
-    }
-
-    return esquerda - direita; 
+  cont++;
+  if (no == NULL) return 0;
+  return altura(no->esq) - altura(no->dir); 
 }
 
 // Rotação Simples à esquerda
 node* rse(tree* arvore, node *no){
- 
+    
     node *pai = no->pai; 
     node *direita =  no->dir; 
 
@@ -132,13 +179,19 @@ node* rse(tree* arvore, node *no){
     direita->esq = no; 
     direita->pai = pai; 
 
+    cont++;
     if(no->dir != NULL) {
         no->dir->pai = no; 
     }
 
+    no->altura = maior(altura(no->esq),altura(no->dir))+1;
+    direita->altura = maior(altura(direita->esq),altura(direita->dir))+1;
+
+    cont++; 
     if(pai==NULL){
         arvore->root = direita  ;
     }else{
+        cont++;
         if(pai->esq == no){
             pai->esq = direita; 
         }
@@ -161,13 +214,18 @@ node* rsd(tree* arvore, node *no){
     esquerda->dir= no; 
     esquerda->pai = pai;
 
+    cont++;
     if(no->esq != NULL){
         no->esq->pai = no;
     } 
-
+    no->altura = maior(altura(no->esq),altura(no->dir))+1;
+    esquerda->altura = maior(altura(esquerda->esq),altura(esquerda->dir))+1;
+    
+    cont++;
     if(pai==NULL){
         arvore->root = esquerda;
     }else{
+        cont++;
         if(pai->esq == no){
             pai->esq = esquerda; 
         }
@@ -195,9 +253,15 @@ node *rdd(tree* arvore, node* no){
 }
 
 
+int maior(int a, int b){
+    cont++;
+    return a > b ? a: b; 
+}
 
+// Função principal para a adição de um novo nó na arvore
 node* adicionar(tree* arvore, int n){
 
+    cont++;
     if (arvore->root == NULL){
         node* no = novoNo(n);
         arvore->root = no;  
@@ -210,10 +274,11 @@ node* adicionar(tree* arvore, int n){
     }
 }
 
+//Inser o novo nó na estrutura 
 node* inserir(node* no, int n){
-
+    cont++;
     if(n > no->chave){
-
+        cont++;
         if(no->dir == NULL){
             no->dir = novoNo(n);
             no->dir->pai =  no;
@@ -223,7 +288,9 @@ node* inserir(node* no, int n){
         }
     }
     else{
+        cont++;
         if(n < no->chave){
+            cont++;
             if(no->esq == NULL){
                 no->esq = novoNo(n);
                 no->esq->pai =  no;
@@ -234,16 +301,16 @@ node* inserir(node* no, int n){
         }
         else{
             //caso há valor repetido
-            return novoNo(n);
+            return no;
         }
     }
     
     
 }
 
+//Função principal para remover um nó da arvore
 void remover(tree* arvore, int n){
-
-    node *no = deletar(arvore->root, n); 
+    node *no = deletar(arvore->root, n);
     balancear(arvore, no);
 }
 
@@ -251,7 +318,7 @@ void remover(tree* arvore, int n){
 node *deletar(node *root, int n){
     
     node* no = buscarNo(root, n); 
-
+    cont++;
     if(no == NULL){ // No não foi encontrado na busca
         return NULL;
     }
@@ -259,8 +326,9 @@ node *deletar(node *root, int n){
     else{
 
         node* pai = no->pai;
-
+        cont++;
         if(no->dir == NULL && no->esq == NULL){    
+            cont++;
             if(pai->esq ==  no) pai->esq = NULL;
             else pai->dir = NULL; 
             free(no);
@@ -268,7 +336,7 @@ node *deletar(node *root, int n){
         }
         
         else{
-
+            cont++;
             if(no->dir != NULL && no->esq!= NULL){
                 node *aux = pegaMaior(no->esq);
                 no->chave =  aux->chave; 
@@ -278,6 +346,7 @@ node *deletar(node *root, int n){
 
             }
             else{
+                cont++;
                 node *aux = no->esq? no->esq:no->dir;
                 *no = *aux;
                 no->pai = pai;
@@ -292,12 +361,15 @@ node *deletar(node *root, int n){
 }
 
 void balancear(tree* arvore, node *no){
-
+    cont++;
     while(no != NULL){
+        cont++;
+        no->altura = 1 + maior(altura(no->esq), altura(no->dir));
         int fator =  fb(no);
 
+        cont++;
         if(fator > 1){
-            
+            cont++;
             if (fb(no->esq) > 0){
                 rsd(arvore, no);
             }
@@ -306,14 +378,16 @@ void balancear(tree* arvore, node *no){
             }
 
         }
-
-        else if (fator < -1){ 
-
-            if(fb(no->dir) < 0){
-                rse(arvore, no);
-            }
-            else{
-                rde(arvore, no);
+        else{ 
+            cont++;
+            if (fator < -1){ 
+                cont++;
+                if(fb(no->dir) < 0){
+                    rse(arvore, no);
+                }
+                else{
+                    rde(arvore, no);
+                }
             }
         }
 
@@ -322,21 +396,27 @@ void balancear(tree* arvore, node *no){
 }
 
 node *buscarNo(node* root, int n){
-
+    cont++;
     if (root == NULL || root->chave == n){
         return root;
     }
 
+    cont++;
     if(root->chave < n) return buscarNo(root->dir, n); 
-    else if (root->chave > n) return buscarNo(root->esq, n);
+    else{
+        cont++;
+        if (root->chave > n) return buscarNo(root->esq, n);
+    }
 }
 
 node * pegaMaior(node* no){
-
+    cont++;
     if(no->dir ==NULL){
         return no; 
     }
     else return pegaMaior(no->dir);
 
 }
+
+
 
