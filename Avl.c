@@ -46,7 +46,7 @@ void delay(int milliseconds);
 int main(){
 
 
-
+//Loop para gerar o número de nós de forma mais "automatizada"
 for(int k = 1000; k <= 10000; k+=500){
     int contInserir = 0;
     int contRemover = 0;
@@ -56,12 +56,16 @@ for(int k = 1000; k <= 10000; k+=500){
         srand(time(NULL));
         tree* a = createTree();
         cont = 0;
+
         int aleatorio = rand() % (k-1);
+
         int num_to_remove; 
         for(int j = 0; j < k; j++){
             int num = rand()%10000;
             adicionar(a,num);
 
+
+            //Pega um numero aleatorio que foi inserido na arvore
             if(aleatorio == j){ 
                 num_to_remove = num;
             }
@@ -76,11 +80,14 @@ for(int k = 1000; k <= 10000; k+=500){
 
         removerTodos(a->root);
 
+
+        //Gera um delay de 1 segundo para atualizar a seed do srand( )
         delay(1000);
     }
 
-    printf("Nodos: %d  | Complexidade de Inserção: %d\n", k, contInserir/NUM_REPETICOES);
-    printf("Nodos: %d  | Complexidade de Remoção: %d\n", k, contRemover/NUM_REPETICOES);
+    //Printa a Média do esforço!!
+    printf("Nodos: %d  | Esforço de Inserção: %d\n", k, contInserir/NUM_REPETICOES);
+    printf("Nodos: %d  | Esforço de Remoção: %d\n", k, contRemover/NUM_REPETICOES);
 
     }
 }
@@ -250,7 +257,7 @@ node *rdd(tree* arvore, node* no){
     return rsd(arvore, no); 
 }
 
-
+//Retorna o maior entre dois numeros
 int maior(int a, int b){
     cont++;
     return a > b ? a: b; 
@@ -272,7 +279,7 @@ node* adicionar(tree* arvore, int n){
     }
 }
 
-//Inser o novo nó na estrutura 
+//Insere o novo nó na estrutura 
 node* inserir(node* no, int n){
     cont++;
     if(n > no->chave){
@@ -325,7 +332,7 @@ node *deletar(node *root, int n){
 
         node* pai = no->pai;
         cont++;
-        if(no->dir == NULL && no->esq == NULL){    
+        if(no->dir == NULL && no->esq == NULL){     //Caso 1: O nó que vai ser removido é um nó folha
             cont++;
             if(pai->esq ==  no) pai->esq = NULL;
             else pai->dir = NULL; 
@@ -335,7 +342,7 @@ node *deletar(node *root, int n){
         
         else{
             cont++;
-            if(no->dir != NULL && no->esq!= NULL){
+            if(no->dir != NULL && no->esq!= NULL){ //Caso 2: O nó que vai ser removido é pai de 2 filhos
                 node *aux = pegaMaior(no->esq);
                 no->chave =  aux->chave; 
                 no->dir->pai = no; 
@@ -343,7 +350,7 @@ node *deletar(node *root, int n){
                 deletar(no->esq, aux->chave);
 
             }
-            else{
+            else{               //Caso 3: O nó que vai ser removido é pai de 1 filho
                 cont++;
                 node *aux = no->esq? no->esq:no->dir;
                 *no = *aux;
@@ -358,6 +365,7 @@ node *deletar(node *root, int n){
 
 }
 
+//Reliza o balaceamento da arvore
 void balancear(tree* arvore, node *no){
     cont++;
     while(no != NULL){
@@ -407,6 +415,8 @@ node *buscarNo(node* root, int n){
     }
 }
 
+/// Funçao para pegar o maior número localiza na sub-árvore à esquerda de um nó.
+// Utilizada no Caso 2 da remoção
 node * pegaMaior(node* no){
     cont++;
     if(no->dir ==NULL){
